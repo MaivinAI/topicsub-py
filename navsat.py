@@ -10,8 +10,6 @@ def parse_args():
     parser = ArgumentParser(description="NavSat Example")
     parser.add_argument('-c', '--connect', type=str, default='tcp/127.0.0.1:7447',
                         help="Connection point for the zenoh session, default='tcp/127.0.0.1:7447'")
-    parser.add_argument('-t', '--time', type=float, default=5,
-                        help="Time to run the subscriber before exiting.")
     return parser.parse_args()
 
 def gps_listener(msg):
@@ -53,9 +51,8 @@ def main():
     # The declare_subscriber runs asynchronously, so we need to block the main
     # thread to keep the program running.  We use time.sleep() to do this
     # but an application could have its main control loop here instead.
-    time.sleep(args.time)
-    sub.undeclare()
-
+    while True:
+        time.sleep(0.1)
 
 if __name__ == "__main__":
     try:
