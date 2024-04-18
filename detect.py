@@ -4,7 +4,7 @@ import sys
 import zenoh
 import time
 from argparse import ArgumentParser
-from example_msgs.Detect import Detect
+from edgefirst.schemas.edgefirst_msgs import Detect
 from datetime import datetime
 
 def parse_args():

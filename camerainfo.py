@@ -3,7 +3,7 @@ import signal
 import sys
 import zenoh
 import time
-from example_msgs.CameraInfo import CameraInfo
+from edgefirst.schemas.sensor_msgs import CameraInfo
 from argparse import ArgumentParser
 
 def parse_args():

@@ -4,7 +4,7 @@ import sys
 import zenoh
 import time
 from argparse import ArgumentParser
-from example_msgs.NavSatFix import NavSatFix
+from edgefirst.schemas.sensor_msgs import NavSatFix
 
 def parse_args():
     parser = ArgumentParser(description="NavSat Example")

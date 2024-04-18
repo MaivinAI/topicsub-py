@@ -4,7 +4,7 @@ import sys
 import zenoh
 import time
 from argparse import ArgumentParser
-from example_msgs.Imu import Imu
+from edgefirst.schemas.sensor_msgs import Imu
 
 def parse_args():
     parser = ArgumentParser(description="Imu Example")

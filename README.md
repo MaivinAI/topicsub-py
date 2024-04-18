@@ -2,6 +2,9 @@
 
 This project demonstrates subscribing to a Maivin EdgeFirst Service from Python and reading messages from the published topics.  The services on Maivin follow a ROS2-like pattern though without using ROS2 itself.  Instead messages are communicated using the [Zenoh](https://zenoh.io) messaging framework with message contents encoded using [CDR](https://en.wikipedia.org/wiki/Common_Data_Representation) according to the [Maivin EdgeFirst Schemas](https://github.com/MaivinAI/schemas).  We prioritize using the published ROS2 schemas from the [ROS2 Common Interfaces](https://github.com/ros2/common_interfaces/tree/humble) when possible.  Where the ROS2 Common Interface schemas are insuffient custom schemas are defined and published.
 
+Please install the Python schemas to run the samples
+```pip install git+https://github.com/MaivinAI/schemas.git@3d96b7f```
+
 Refer to [Maivin EdgeFirst Schemas](https://github.com/MaivinAI/schemas) for an overview of the services and their schemas used by this example project.
 
 # Examples
