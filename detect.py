@@ -1,5 +1,4 @@
 import atexit
-import signal
 import sys
 import zenoh
 import time
