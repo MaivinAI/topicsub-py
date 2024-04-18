@@ -50,7 +50,7 @@ def main():
     sub = session.declare_subscriber('rt/**', all_listener)
 
     # The declare_subscriber runs asynchronously, so we need to block the main
-    # thread to keep the program running.  We use signal.pause() to do this
+    # thread to keep the program running.  We use time.sleep() to do this
     # but an application could have its main control loop here instead.
     # signal.pause()
     time.sleep(args.time)
