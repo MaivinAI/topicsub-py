@@ -21,13 +21,11 @@ The following examples are provided which are all based on topics which can be e
 - detect.py
   - Prints the object detection and tracking information currently observed by the Raivin
 
-- fusion.py
-  - Prints the radar points and detection information currently observed by the Raivin
- 
-- centroid.py
+- fusion.py 
+  - Prints the radar points and detection information currently observed by the Raivin 
   - Prints the centroid of clustered radar points and detection information currently observed by the Raivin
 
-- model.py
+- fusionraw.py
   - Prints the raw model points and detection information currently observed by the Raivin
 
 - camerainfo.py
