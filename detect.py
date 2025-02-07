@@ -14,6 +14,7 @@ def parse_args():
 
 def detection_listener(msg):
     detection = Detect.deserialize(msg.value.payload)
+    print(detection)
     # Generate timestamp from results info
     input_time = detection.input_timestamp.sec + (detection.input_timestamp.nanosec / 1e9)
     date = datetime.fromtimestamp(input_time)
@@ -36,9 +37,9 @@ def main():
     cfg.insert_json5(zenoh.config.CONNECT_KEY, '["%s"]' % args.connect)
     session = zenoh.open(cfg)
 
-    # Declare a subscriber on the 'rt/detect/boxes2d' topic and print number of boxes
+    # Declare a subscriber on the 'rt/model/boxes2d' topic and print number of boxes
     # and boxes data by decoding the message using the Detect schema.
-    sub = session.declare_subscriber('rt/detect/boxes2d', detection_listener)
+    sub = session.declare_subscriber('rt/model/boxes2d', detection_listener)
 
     # Ensure the session is closed when the script exits
     def _on_exit():
