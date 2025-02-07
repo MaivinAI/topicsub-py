@@ -75,7 +75,7 @@ def main():
     cfg.insert_json5(zenoh.config.CONNECT_KEY, '["%s"]' % args.connect)
     session = zenoh.open(cfg)
 
-    # Declare a subscriber on the 'rt/fusion/targets' topic and print number of boxes
+    # Declare a subscriber on the 'rt/fusion/occupancy' topic and print number of boxes
     # and boxes data by decoding the message using the Detect schema.
     sub = session.declare_subscriber('rt/fusion/occupancy', centeroid_listener)
 
