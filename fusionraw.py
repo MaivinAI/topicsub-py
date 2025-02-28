@@ -15,7 +15,7 @@ def parse_args():
     return parser.parse_args()
 
 def fusion_listener(msg):
-    fusion = Mask.deserialize(msg.value.payload)
+    fusion = Mask.deserialize(bytes(msg.payload))
     print(f"\nMask Data:")
     print(f"Dimensions: {fusion.width} x {fusion.height}")
     print(f"Encoding: {fusion.encoding}")
@@ -69,7 +69,7 @@ def main():
     # connection to the local router over TCP at port 7447.  We do this because
     # we currently have scouting disabled to reduce overhead.
     cfg = zenoh.Config()
-    cfg.insert_json5(zenoh.config.CONNECT_KEY, '["%s"]' % args.connect)
+    cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
     session = zenoh.open(cfg)
 
     # Declare a subscriber on the 'rt/fusion/model_output' topic and print number of boxes
@@ -84,8 +84,13 @@ def main():
     # The declare_subscriber runs asynchronously, so we need to block the main
     # thread to keep the program running. We use an empty infinite loop to do this
     # but an application could have its main control loop here instead.
-    while True:
-        time.sleep(0.1)
+    try:
+        while True:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("\nExiting...")
+        session.close()
+        sys.exit(0)
 
 if __name__ == "__main__":
     try:

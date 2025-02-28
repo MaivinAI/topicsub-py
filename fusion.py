@@ -18,7 +18,7 @@ def parse_args():
 
 
 def process_point_cloud(msg, is_fusion_mode=True):
-    point_cloud = PointCloud2.deserialize(msg.value.payload)
+    point_cloud = PointCloud2.deserialize(bytes(msg.payload))
 
     print(f"Frame ID: {point_cloud.header.frame_id}")
     print(f"Points: {point_cloud.width} x {point_cloud.height}")
@@ -99,7 +99,7 @@ def process_point_cloud(msg, is_fusion_mode=True):
 def main():
     args = parse_args()
     cfg = zenoh.Config()
-    cfg.insert_json5(zenoh.config.CONNECT_KEY, '["%s"]' % args.connect)
+    cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
     session = zenoh.open(cfg)
 
     # Subscribe to appropriate topic based on mode
@@ -119,8 +119,13 @@ def main():
     # The declare_subscriber runs asynchronously, so we need to block the main
     # thread to keep the program running. We use an empty infinite loop to do this
     # but an application could have its main control loop here instead.
-    while True:
-        time.sleep(0.1)
+    try:
+        while True:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("\nExiting...")
+        session.close()
+        sys.exit(0)
 
 if __name__ == "__main__":
     try:
