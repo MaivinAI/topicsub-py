@@ -99,6 +99,7 @@ def process_point_cloud(msg, is_fusion_mode=True):
 def main():
     args = parse_args()
     cfg = zenoh.Config()
+    cfg.insert_json5("mode", "'client'")
     cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
     session = zenoh.open(cfg)
 

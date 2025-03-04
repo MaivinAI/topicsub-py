@@ -3,7 +3,6 @@ import time
 from argparse import ArgumentParser
 
 ENCODING_PREFIX = str(zenoh.Encoding.APPLICATION_OCTET_STREAM)
-zenoh.init_log_from_env_or('info')
 detected_msgs = {}  
 
 def parse_args():
