@@ -1,12 +1,10 @@
-import atexit
-import sys
 import zenoh
 import time
 from argparse import ArgumentParser
 
 ENCODING_PREFIX = str(zenoh.Encoding.APPLICATION_OCTET_STREAM)
+zenoh.init_log_from_env_or('info')
 detected_msgs = {}  
-
 
 def parse_args():
     parser = ArgumentParser(description="Topics Example")
@@ -16,8 +14,8 @@ def parse_args():
                         help="Time to run the subscriber before exiting.")
     return parser.parse_args()
 
-
 def all_listener(msg):
+
     msg_key = str(msg.key_expr)
     if msg_key in detected_msgs.keys():
         return
@@ -32,26 +30,17 @@ def all_listener(msg):
     detected_msgs[msg_key] = msg_type
     print("New Topic Found: %s --> %s" % (msg_key, msg_type))
 
-
 def main():
     args = parse_args()
     # Create a Zenoh session using the default configuration plus explicit
     # connection to the local router over TCP at port 7447.  We do this because
     # we currently have scouting disabled to reduce overhead.
     cfg = zenoh.Config()
+    cfg.insert_json5("mode", "'client'")
     cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
     session = zenoh.open(cfg)
-
-    # Ensure the session is closed when the script exits
-    def _on_exit():
-        session.close()
-    atexit.register(_on_exit)
-
     try:
-        # Declare a subscriber on the requested topic and print the schema name for
-        # this topic.
-        # sub0 = session.declare_subscriber('rt/gps', lambda msg:
-        #     print(str(msg.encoding).removeprefix(ENCODING_PREFIX)))
+        # Declare subscriber that will listen for all the rt/ messages
         sub = session.declare_subscriber('rt/**', all_listener)
 
         # The declare_subscriber runs asynchronously, so we need to block the main
@@ -59,15 +48,14 @@ def main():
         # but an application could have its main control loop here instead.
         # signal.pause()
         time.sleep(args.time)
-        sub.undeclare()
+
     except KeyboardInterrupt:
         print("\nExiting...")
+
+    finally:
         if 'sub' in locals():
             sub.undeclare()
-
+        session.close()
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        sys.exit(0)
+    main()
