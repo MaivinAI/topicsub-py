@@ -4,9 +4,7 @@ import zenoh
 import time
 from argparse import ArgumentParser
 from edgefirst.schemas.sensor_msgs import PointCloud2
-from datetime import datetime
 import struct
-import numpy as np
 
 def parse_args():
     parser = ArgumentParser(description="Point Cloud Viewer")
@@ -98,10 +96,14 @@ def process_point_cloud(msg, is_fusion_mode=True):
 
 def main():
     args = parse_args()
-    cfg = zenoh.Config()
-    cfg.insert_json5("mode", "'client'")
-    cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
-    session = zenoh.open(cfg)
+    try:
+        cfg = zenoh.Config()
+        cfg.insert_json5("mode", "'client'")
+        cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
+        session = zenoh.open(cfg)
+    except zenoh.ZenohError as e:
+        print(f"Failed to open Zenoh session: {e}")
+        sys.exit(1)
 
     # Subscribe to appropriate topic based on mode
     topic = 'rt/fusion/targets' if args.mode == 'fusion' else 'rt/fusion/occupancy'

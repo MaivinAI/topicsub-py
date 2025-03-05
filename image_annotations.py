@@ -20,10 +20,14 @@ def main():
     # Create a Zenoh session using the default configuration plus explicit
     # connection to the local router over TCP at port 7447.  We do this because
     # we currently have scouting disabled to reduce overhead.
-    cfg = zenoh.Config()
-    cfg.insert_json5("mode", "'client'")
-    cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
-    session = zenoh.open(cfg)
+    try:
+        cfg = zenoh.Config()
+        cfg.insert_json5("mode", "'client'")
+        cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
+        session = zenoh.open(cfg)
+    except zenoh.ZenohError as e:
+        print(f"Failed to open Zenoh session: {e}")
+        sys.exit(1)
 
     # Declare a subscriber on the 'rt/camera/info' topic and print each message
     # with the CameraInfo schema.
