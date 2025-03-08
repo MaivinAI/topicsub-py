@@ -39,7 +39,7 @@ def main():
         cfg.insert_json5("mode", "'client'")
         cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
         session = zenoh.open(cfg)
-    except zenoh.ZenohError as e:
+    except zenoh.ZError as e:
         print(f"Failed to open Zenoh session: {e}")
         sys.exit(1)
     try:
