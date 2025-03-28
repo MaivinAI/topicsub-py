@@ -13,7 +13,7 @@ def parse_args():
     return parser.parse_args()
 
 def detection_listener(msg):
-    detection = Detect.deserialize(msg.value.payload)
+    detection = Detect.deserialize(bytes(msg.payload))
     print(detection)
     # Generate timestamp from results info
     input_time = detection.input_timestamp.sec + (detection.input_timestamp.nanosec / 1e9)
@@ -33,9 +33,14 @@ def main():
     # Create a Zenoh session using the default configuration plus explicit
     # connection to the local router over TCP at port 7447.  We do this because
     # we currently have scouting disabled to reduce overhead.
-    cfg = zenoh.Config()
-    cfg.insert_json5(zenoh.config.CONNECT_KEY, '["%s"]' % args.connect)
-    session = zenoh.open(cfg)
+    try:
+        cfg = zenoh.Config()
+        cfg.insert_json5("mode", "'client'")
+        cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
+        session = zenoh.open(cfg)
+    except zenoh.ZError as e:
+        print(f"Failed to open Zenoh session: {e}")
+        sys.exit(1)
 
     # Declare a subscriber on the 'rt/model/boxes2d' topic and print number of boxes
     # and boxes data by decoding the message using the Detect schema.
@@ -49,8 +54,13 @@ def main():
     # The declare_subscriber runs asynchronously, so we need to block the main
     # thread to keep the program running. We use an empty infinite loop to do this
     # but an application could have its main control loop here instead.
-    while True:
-        time.sleep(0.1)
+    try:
+        while True:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("\nExiting...")
+        session.close()
+        sys.exit(0)
 
 if __name__ == "__main__":
     try:

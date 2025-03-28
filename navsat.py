@@ -12,7 +12,7 @@ def parse_args():
     return parser.parse_args()
 
 def gps_listener(msg):
-    gps = NavSatFix.deserialize(msg.value.payload)
+    gps = NavSatFix.deserialize(bytes(msg.payload))
     lat = gps.latitude
     long = gps.longitude
     print("Latitude: %.6f Longitude: %.6f" % (lat, long))
@@ -34,9 +34,14 @@ def main():
     # Create a Zenoh session using the default configuration plus explicit
     # connection to the local router over TCP at port 7447.  We do this because
     # we currently have scouting disabled to reduce overhead.
-    cfg = zenoh.Config()
-    cfg.insert_json5(zenoh.config.CONNECT_KEY, '["%s"]' % args.connect)
-    session = zenoh.open(cfg)
+    try:
+        cfg = zenoh.Config()
+        cfg.insert_json5("mode", "'client'")
+        cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
+        session = zenoh.open(cfg)
+    except zenoh.ZError as e:
+        print(f"Failed to open Zenoh session: {e}")
+        sys.exit(1)
 
     # Ensure the session is closed when the script exits
     def _on_exit():
@@ -47,14 +52,13 @@ def main():
     # decoding the message using the NavSat schema.
     sub = session.declare_subscriber('rt/gps', gps_listener)
 
-    # The declare_subscriber runs asynchronously, so we need to block the main
-    # thread to keep the program running.  We use time.sleep() to do this
-    # but an application could have its main control loop here instead.
-    while True:
-        time.sleep(0.1)
+    try:
+        while True:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("\nExiting...")
+        session.close()
+        sys.exit(0)
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        sys.exit(0)
+    main()

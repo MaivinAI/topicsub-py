@@ -1,12 +1,10 @@
-import atexit
 import sys
 import zenoh
 import time
 from argparse import ArgumentParser
 
-ENCODING_PREFIX = str(zenoh.Encoding.APP_OCTET_STREAM())
+ENCODING_PREFIX = str(zenoh.Encoding.APPLICATION_OCTET_STREAM)
 detected_msgs = {}  
-
 
 def parse_args():
     parser = ArgumentParser(description="Topics Example")
@@ -16,48 +14,51 @@ def parse_args():
                         help="Time to run the subscriber before exiting.")
     return parser.parse_args()
 
-
 def all_listener(msg):
     msg_key = str(msg.key_expr)
     if msg_key in detected_msgs.keys():
         return
+    
     encoding = str(msg.encoding)
-    if encoding.startswith(ENCODING_PREFIX):
+    msg_type = encoding  # Default value
+    if ";" in encoding:  # Check if encoding contains a semicolon
+        msg_type = encoding.split(";")[1]  # Take the part after the semicolon
+    elif encoding.startswith(ENCODING_PREFIX):
         msg_type = encoding.replace(ENCODING_PREFIX, '')
+    
     detected_msgs[msg_key] = msg_type
-    print("New Topic Found: %s --> %s" % (msg_key, msg_type)) 
-
+    print("New Topic Found: %s --> %s" % (msg_key, msg_type))
 
 def main():
     args = parse_args()
     # Create a Zenoh session using the default configuration plus explicit
     # connection to the local router over TCP at port 7447.  We do this because
     # we currently have scouting disabled to reduce overhead.
-    cfg = zenoh.Config()
-    cfg.insert_json5(zenoh.config.CONNECT_KEY, '["%s"]' % args.connect)
-    session = zenoh.open(cfg)
+    try:
+        cfg = zenoh.Config()
+        cfg.insert_json5("mode", "'client'")
+        cfg.insert_json5("connect", '{ "endpoints": ["%s"] }' % args.connect)
+        session = zenoh.open(cfg)
+    except zenoh.ZError as e:
+        print(f"Failed to open Zenoh session: {e}")
+        sys.exit(1)
+    try:
+        # Declare subscriber that will listen for all the rt/ messages
+        sub = session.declare_subscriber('rt/**', all_listener)
 
-    # Ensure the session is closed when the script exits
-    def _on_exit():
+        # The declare_subscriber runs asynchronously, so we need to block the main
+        # thread to keep the program running.  We use time.sleep() to do this
+        # but an application could have its main control loop here instead.
+        # signal.pause()
+        time.sleep(args.time)
+
+    except KeyboardInterrupt:
+        print("\nExiting...")
+
+    finally:
+        if 'sub' in locals():
+            sub.undeclare()
         session.close()
-    atexit.register(_on_exit)
-
-    # Declare a subscriber on the requested topic and print the schema name for
-    # this topic.
-    # sub0 = session.declare_subscriber('rt/gps', lambda msg:
-    #     print(str(msg.encoding).removeprefix(ENCODING_PREFIX)))
-    sub = session.declare_subscriber('rt/**', all_listener)
-
-    # The declare_subscriber runs asynchronously, so we need to block the main
-    # thread to keep the program running.  We use time.sleep() to do this
-    # but an application could have its main control loop here instead.
-    # signal.pause()
-    time.sleep(args.time)
-    sub.undeclare()
-
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        sys.exit(0)
+    main()
